@@ -7,12 +7,12 @@ export const registerSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
+  mobile: Yup.string()
+    .required("Mobile number is required")
+    .matches(/^\d{10,15}$/, "Mobile number must be 10-15 digits"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters")
     .required("Password is required"),
-  password_confirmation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Confirm Password is required"),
 });
 
 

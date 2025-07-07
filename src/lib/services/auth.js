@@ -9,7 +9,7 @@ export const authAPI = createApi({
     createUser: builder.mutation({
       query: (user) => {
         return {
-          url: "register/",
+          url: "signup",
           method: "POST",
           body: user,
           headers: {
@@ -24,7 +24,7 @@ export const authAPI = createApi({
     verfyEmail: builder.mutation({
       query: (user) => {
         return {
-          url: "verify-email/",
+          url: "verify-otp",
           method: "POST",
           body: user,
           headers: {
@@ -39,7 +39,7 @@ export const authAPI = createApi({
     loginUser: builder.mutation({
       query: (user) => {
         return {
-          url: "login/",
+          url: "login",
           method: "POST",
           body: user,
           headers: {

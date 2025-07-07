@@ -1,197 +1,146 @@
 "use client";
+import React, { useActionState, useEffect } from "react";
 
-import { useActionState } from "react";
-import { registerSchema } from "@/validation/schemas";
-import { useCreateUserMutation } from "@/lib/services/auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { signupFormAction } from "@/action/signup";
 
-const SignUp = () => {
-  const [createUser] = useCreateUserMutation();
+
+
+// adjust path if needed
+
+const SignupForm = () => {
+  const [state, formAction, isPending] = useActionState(signupFormAction , undefined);
   const router = useRouter();
-
-  const signUpAction = async (prevState, formData) => {
-    const values = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      password: formData.get("password"),
-      password_confirmation: formData.get("password_confirmation"),
-    };
-
-    console.log("Form values:", values); // Debug log
-
-    // Validate with schema
-
-
-    try {
-      await registerSchema.validate(values, { abortEarly: false });
-    } catch (validationError) {
-      const errors = {};
-      if (validationError.inner) {
-        validationError.inner.forEach((error) => {
-          errors[error.path] = error.message;
-        });
-      }
-      console.log("Validation errors:", errors); // Debug log
-      return {
-        errors,
-        serverErrorMessage: "",
-        serverSuccessMessage: "",
-        success: false
-      };
-    }
-
-    
-    // If validation passes, proceed with API call
-    try {
-      console.log("Sending API request with data:", values); // Debug log
-      const response = await createUser(values);
-      console.log("API Response:", response); // Debug log
-      
-      if (response.data && response.data.status === "success") {
-        return {
-          errors: {},
-          serverErrorMessage: "",
-          serverSuccessMessage: response.data.message,
-          success: true,
-          email: values.email
-        };
-      }
-      
-      if (response.error) {
-        console.log("API Error:", response.error); // Debug log
-        const errorMessage = response.error.data?.message || "Registration failed";
-        return {
-          errors: {},
-          serverErrorMessage: errorMessage,
-          serverSuccessMessage: "",
-          success: false
-        };
-      }
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return {
-        errors: {},
-        serverErrorMessage: "An unexpected error occurred",
-        serverSuccessMessage: "",
-        success: false
-      };
-    }
-
-    return prevState;
-  };
-
-  const [state, formAction, isPending] = useActionState(signUpAction, {
-    errors: {},
-    serverErrorMessage: "",
-    serverSuccessMessage: "",
-    success: false,
-    email: ""
-  });
-
-  // Handle redirection after successful signup
   useEffect(() => {
-    if (state.success) {
-      router.push(`/account/verify-email?email=${encodeURIComponent(state.email)}`);
+    if (state?.success) {
+      // router.push("/otpverification");
+      // toast.success(state.message); 
+      console.log(state.message)
+    } else if (state?.error) {
+      console.log(state.error);
+      // toast.error(state.error);
     }
-  }, [state.success, state.email, router]);
+  }, [router, state?.success, state?.error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
-        <form className="space-y-4" action={formAction}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              id="name"
-              name="name"
-              required
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {state.errors.name && (
-              <div className="text-red-500 text-sm mt-1">{state.errors.name}</div>
-            )}
+
+      <div className="flex flex-col md:flex-row h-[80vh] overflow-hidden">
+        {/* Left Image Section */}
+        <div className="relative w-full md:w-1/2 h-64 md:h-full">
+          <img
+            src="https://cdn.pixabay.com/photo/2017/08/05/00/12/girl-2581913_1280.jpg"
+            alt="Signup Visual"
+            className="absolute inset-0 object-cover w-full h-full"
+          />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <h1 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold text-center leading-snug">
+              Welcome to Urban SWagger!
+            </h1>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              id="email"
-              name="email"
-              required
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {state.errors.email && (
-              <div className="text-red-500 text-sm mt-1">{state.errors.email}</div>
+        </div>
+
+        {/* Right Signup Form Section */}
+        <div className="w-full md:w-1/2 flex items-center justify-center bg-white py-10 md:py-0">
+          <div className="w-full max-w-md px-6 sm:px-10">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
+              Sign Up
+            </h2>
+            <p className="text-gray-500 mb-6">
+              Please fill in your details to create an account
+            </p>
+
+            {/* {state?.error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{state.error}</p>
+              </div>
             )}
+            {state?.success && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-green-600 text-sm">{state.message}</p>
+              </div>
+            )} */}
+
+            <form action={formAction}>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  required
+                  className={`w-full px-3 py-3 border-b ${
+                    state?.errors?.name ? 'border-red-400' : 'border-gray-400'
+                  } focus:outline-none focus:border-gray-800`}
+                />
+                {state?.errors?.name && (
+                  <p className="text-sm text-red-500 mt-1">{state.errors.name}</p>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <input
+                  type="tel"
+                  name="mobile"
+                  placeholder="Mobile Number"
+                  required
+                  className={`w-full px-3 py-3 border-b ${
+                    state?.errors?.mobile ? 'border-red-400' : 'border-gray-400'
+                  } focus:outline-none focus:border-gray-800`}
+                />
+                {state?.errors?.mobile && (
+                  <p className="text-sm text-red-500 mt-1">{state.errors.mobile}</p>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  required
+                  className={`w-full px-3 py-3 border-b ${
+                    state?.errors?.email ? 'border-red-400' : 'border-gray-400'
+                  } focus:outline-none focus:border-gray-800`}
+                />
+                {state?.errors?.email && (
+                  <p className="text-sm text-red-500 mt-1">{state.errors.email}</p>
+                )}
+              </div>
+            
+              <div className="mb-6">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  required
+                  className={`w-full px-3 py-3 border-b ${
+                    state?.errors?.password ? 'border-red-400' : 'border-gray-400'
+                  } focus:outline-none focus:border-gray-800`}
+                />
+                {state?.errors?.password && (
+                  <p className="text-sm text-red-500 mt-1">{state.errors.password}</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full bg-[var(--primary-color)] text-white py-3 rounded-lg hover:bg-[var(--primary-hover)] transition disabled:opacity-50"
+              >
+                {isPending ? "Signing Up..." : "Sign Up"}
+              </button>
+            </form>
+            <p className="text-gray-500 text-sm mt-2 text-center">
+              Already have an account?{" "}
+              <Link href="/login" className="text-blue-500">
+                Login
+              </Link>
+            </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="*********"
-              id="password"
-              name="password"
-              required
-              minLength={8}
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {state.errors.password && (
-              <div className="text-red-500 text-sm mt-1">{state.errors.password}</div>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              placeholder="*********"
-              id="password_confirmation"
-              name="password_confirmation"
-              required
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {state.errors.password_confirmation && (
-              <div className="text-red-500 text-sm mt-1">{state.errors.password_confirmation}</div>
-            )}
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
-            disabled={isPending}
-          >
-            {isPending ? "Signing Up..." : "Sign Up"}
-          </button>
-        </form>
-        <p className="mt-4 text-sm text-center text-gray-600">
-          Already have an account?{" "}
-          <a href="/account/login" className="text-blue-600 hover:underline">
-            Login
-          </a>
-        </p>
-        {state.serverSuccessMessage && (
-          <div className="text-green-500 text-sm mt-2">{state.serverSuccessMessage}</div>
-        )}
-        {state.serverErrorMessage && (
-          <div className="text-red-500 text-sm mt-2">{state.serverErrorMessage}</div>
-        )}
+        </div>
       </div>
-    </div>
+
   );
 };
 
-export default SignUp;
-
-
-
+export default SignupForm;

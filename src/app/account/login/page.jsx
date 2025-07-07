@@ -1,83 +1,28 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLoginUserMutation } from "@/lib/services/auth";
 import { loginSchema } from "@/validation/schemas";
+import { loginAction } from "@/action/login";
+import { Love_Light } from "next/font/google";
 
 const Login = () => {
+
+
+  const [state , formAction , isPending] = useActionState(loginAction , undefined)
   const router = useRouter();
-  const [loginUser] = useLoginUserMutation();
-
-  // Action handler
-  const loginAction = async (prevState, formData) => {
-    const email = formData.get("email");
-    const password = formData.get("password");
-
-    const values = { email, password };
-
-    try {
-      await loginSchema.validate(values, { abortEarly: false });
-    } catch (validationError) {
-      const errors = {};
-      if (validationError.inner) {
-        validationError.inner.forEach((error) => {
-          errors[error.path] = error.message;
-        });
-      }
-      return {
-        errors,
-        serverErrorMessage: "",
-        serverSuccessMessage: "",
-        success: false,
-      };
-    }
-
-    try {
-      const response = await loginUser(values);
-
-      if (response.data && response.data.status === "success") {
-       
-        document.cookie = "is_auth=true; path=/";
-
+  useEffect(()=>{
+    if(state?.success){
+      console.log(state.message);
       
-        router.push("/user/profile");
-
-        return {
-          errors: {},
-          serverErrorMessage: "",
-          serverSuccessMessage: response.data.message,
-          success: true,
-        };
-      }
-
-      if (response.error && response.error.status === "failed") {
-        return {
-          errors: {},
-          serverErrorMessage: response.error.data.message,
-          serverSuccessMessage: "",
-          success: false,
-        };
-      }
-    } catch (error) {
-      return {
-        errors: {},
-        serverErrorMessage: "An unexpected error occurred.",
-        serverSuccessMessage: "",
-        success: false,
-      };
     }
-
-    return prevState;
-  };
-
-  const [state, formAction, isPending] = useActionState(loginAction, {
-    errors: {},
-    serverErrorMessage: "",
-    serverSuccessMessage: "",
-    success: false,
-  });
-
+    else if (state?.error){
+       console.log(state.error);
+       
+    }
+  },[router , state?.success , state?.error])
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
