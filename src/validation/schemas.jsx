@@ -1,52 +1,44 @@
-import * as Yup from "yup";
+import { z } from "zod";
 
-export const registerSchema = Yup.object().shape({
-  name: Yup.string()
-    .required("Name is required")
-    .min(2, "Name must be at least 2 characters"),
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
-  mobile: Yup.string()
-    .required("Mobile number is required")
-    .matches(/^\d{10,15}$/, "Mobile number must be 10-15 digits"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .required("Password is required"),
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  mobile: z
+    .string()
+    .regex(/^\d{10,15}$/, "Mobile number must be 10-15 digits"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-
-export const loginSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required"),
-});
-export const resetPasswordSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string(),
 });
 
-export const resetPasswordConfirmSchema = Yup.object({
-  password: Yup.string()
-   
-    .required("Password is required"),
-  password_confermation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Confirm Password is required"),
+export const resetPasswordSchema = z.object({
+  email: z.string().email("Invalid email"),
 });
 
-export const verifyEmailSchema = Yup.object({
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is required"),
-  otp: Yup.string()
-   
-    .required("OTP is required"),
+export const resetPasswordConfirmSchema = z
+  .object({
+    password: z.string(),
+    password_confermation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confermation, {
+    message: "Passwords must match",
+    path: ["password_confermation"],
+  });
+
+export const verifyEmailSchema = z.object({
+ ///// email: z.string().email("Invalid email"),
+  otp: z.string(),
 });
-export const changePasswordSchema = Yup.object({
-  password: Yup.string()
-    
-    .required("Password is required"),
-  password_confirmation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-   
-});
+
+export const changePasswordSchema = z
+  .object({
+    password: z.string(),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords must match",
+    path: ["password_confirmation"],
+  });

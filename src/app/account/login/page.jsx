@@ -1,34 +1,52 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+
 import { useRouter } from "next/navigation";
 import { useLoginUserMutation } from "@/lib/services/auth";
-import { loginSchema } from "@/validation/schemas";
-import { loginAction } from "@/action/login";
-import { Love_Light } from "next/font/google";
 
 const Login = () => {
-
-
-  const [state , formAction , isPending] = useActionState(loginAction , undefined)
   const router = useRouter();
-  useEffect(()=>{
-    if(state?.success){
-      console.log(state.message);
-      
+  const [loginUser, { isLoading, isError, error, data }] =
+    useLoginUserMutation();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [formError, setFormError] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+
+    try {
+      const result = await loginUser(formData).unwrap();
+
+      console.log("✅ Login Success:", result);
+
+      // Redirect after successful login
+      router.push("/user/profile");
+    } catch (err) {
+      console.error("❌ Login Failed:", err);
+      setFormError(err?.data?.message || "Login failed.");
     }
-    else if (state?.error){
-       console.log(state.error);
-       
-    }
-  },[router , state?.success , state?.error])
- 
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-        <form className="space-y-4" action={formAction}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -37,11 +55,11 @@ const Login = () => {
               type="email"
               name="email"
               placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
-            {state.errors.email && (
-              <p className="text-red-500 text-sm mt-1">{state.errors.email}</p>
-            )}
           </div>
 
           <div>
@@ -52,13 +70,11 @@ const Login = () => {
               type="password"
               name="password"
               placeholder="********"
+              value={formData.password}
+              onChange={handleChange}
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
-            {state.errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {state.errors.password}
-              </p>
-            )}
           </div>
 
           <p className="mt-2 text-sm text-center text-gray-600">
@@ -73,10 +89,10 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isLoading}
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
           >
-            {isPending ? "Logging in..." : "Login"}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
 
@@ -87,14 +103,10 @@ const Login = () => {
           </a>
         </p>
 
-        {state.serverSuccessMessage && (
-          <div className="text-green-500 text-sm mt-2">
-            {state.serverSuccessMessage}
-          </div>
-        )}
-        {state.serverErrorMessage && (
-          <div className="text-red-500 text-sm mt-2">
-            {state.serverErrorMessage}
+        {/* Server Error */}
+        {formError && (
+          <div className="text-red-500 text-sm mt-4 text-center">
+            {formError}
           </div>
         )}
       </div>

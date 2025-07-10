@@ -1,21 +1,9 @@
 "use client";
 
 import { useGetUserQuery } from "@/lib/services/auth";
-import { useState, useEffect } from "react";
 
 const Profile = () => {
-  const [user, setUser] = useState({});
   const { data, isSuccess, isLoading, isError, error } = useGetUserQuery();
-
-  useEffect(() => {
-    console.log("Fetched data:", data);
-    console.log("isSuccess:", isSuccess);
-
-    if (data && isSuccess) {
-      setUser(data.user);
-    }
-  }, [data, isSuccess]);
-
 
   if (isLoading) {
     return (
@@ -25,17 +13,30 @@ const Profile = () => {
     );
   }
 
-
   if (isError) {
+    // Show a friendly message for unauthenticated users
+    const isUnauthorized =
+      error?.status === 401 || error?.originalStatus === 401;
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <p className="text-red-600">
-          Error: {error?.message || "Something went wrong."}
+          {isUnauthorized
+            ? "You are not logged in. Please log in to view your profile."
+            : `Error: ${error?.message || "Something went wrong."}`}
         </p>
       </div>
     );
   }
 
+  if (!data || !data.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600">No user data found.</p>
+      </div>
+    );
+  }
+
+  const user = data.user;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -52,14 +53,14 @@ const Profile = () => {
           </div>
           <div className="flex justify-between">
             <span className="font-medium">Role:</span>
-            <span className="capitalize">{user?.roles?.[0] || "-"}</span>
+            <span className="capitalize">
+              {user?.roles?.[0] || user?.role || "-"}
+            </span>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-
 
 export default Profile;

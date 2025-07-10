@@ -24,7 +24,7 @@ export const authAPI = createApi({
     verfyEmail: builder.mutation({
       query: (user) => {
         return {
-          url: "verify-otp",
+          url: "otpverification",
           method: "POST",
           body: user,
           headers: {
@@ -56,7 +56,6 @@ export const authAPI = createApi({
         return {
           url: "me",
           method: "GET",
-
           credentials: "include", ////it is required to set cookies
         };
       },
