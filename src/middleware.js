@@ -9,11 +9,11 @@ export async function middleware(request) {
     const isAuthenticated = request.cookies.get("is_auth")?.value;
     const path = request.nextUrl.pathname;
 
-    // if (isAuthenticated) {
-    //   if (authPaths.includes(path)) {
-    //     return NextResponse.redirect(new URL("/user/profile", request.url));
-    //   }
-    // }
+    if (isAuthenticated) {
+      if (authPaths.includes(path)) {
+        return NextResponse.redirect(new URL("/user/profile", request.url));
+      }
+    }
 
     if (!isAuthenticated && !authPaths.includes(path)) {
       return NextResponse.redirect(new URL("/account/login", request.url));
@@ -27,5 +27,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: [ "/account/login", "/account/signup"],
+  matcher: ["/user/:path*", "/account/login", "/account/signup"],
 };

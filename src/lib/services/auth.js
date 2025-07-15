@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-
 // Define a service using a base URL and expected endpoints
 export const authAPI = createApi({
   reducerPath: "authAPI",
@@ -19,8 +18,6 @@ export const authAPI = createApi({
       },
     }),
 
-
-    
     verfyEmail: builder.mutation({
       query: (user) => {
         return {
@@ -33,8 +30,6 @@ export const authAPI = createApi({
         };
       },
     }),
-
-
 
     loginUser: builder.mutation({
       query: (user) => {
@@ -50,7 +45,6 @@ export const authAPI = createApi({
       },
     }),
 
-
     getUser: builder.query({
       query: () => {
         return {
@@ -60,8 +54,6 @@ export const authAPI = createApi({
         };
       },
     }),
-
-
 
     logoutUser: builder.mutation({
       query: () => {
@@ -73,8 +65,6 @@ export const authAPI = createApi({
         };
       },
     }),
-
-    
 
     resetPasswordLink: builder.mutation({
       query: (user) => {
@@ -88,8 +78,6 @@ export const authAPI = createApi({
         };
       },
     }),
-
-
 
     resetPassword: builder.mutation({
       query: (data) => {
@@ -106,24 +94,30 @@ export const authAPI = createApi({
       },
     }),
 
-
-
-
     changePassword: builder.mutation({
       query: (actualdata) => {
         return {
           url: "change-password",
-          method: "POST",
+          method: "PUT",
           body: actualdata,
           credentials: "include", ////it is required to set cookies
         };
       },
     }),
+
+    googleLogin: builder.mutation({
+      query: (idToken) => ({
+        url: "google",
+        method: "POST",
+        body: { idToken },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }),
+    }),
   }),
 });
-
-
-
 
 export const {
   useCreateUserMutation,
@@ -134,4 +128,5 @@ export const {
   useResetPasswordLinkMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
+  useGoogleLoginMutation,
 } = authAPI;
