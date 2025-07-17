@@ -14,68 +14,10 @@ const initialState = {
 };
 
 const VerifyEmail = () => {
-  const [verifyEmail] = useVerfyEmailMutation();
+
   const router = useRouter();
 
-  const verifyEmailAction = async (prevState, formData) => {
-    const values = {
-      email: formData.get("email"),
-      otp: formData.get("otp"),
-    };
 
-    // Validate with schema
-    try {
-      await verifyEmailSchema.validate(values, { abortEarly: false });
-    } catch (validationError) {
-      const errors = {};
-      validationError.inner.forEach((error) => {
-        errors[error.path] = error.message;
-      });
-      return {
-        ...prevState,
-        errors,
-        serverErrorMessage: "",
-        serverSuccessMessage: "",
-        loading: false,
-      };
-    }
-
-    // If validation passes, proceed with API call
-    try {
-      const response = await verifyEmail(values);
-      
-      if (response.data && response.data.status === "success") {
-        router.push('/account/login');
-        return {
-          errors: {},
-          serverErrorMessage: "",
-          serverSuccessMessage: response.data.message,
-          loading: false,
-        };
-      }
-      
-      if (response.error && response.error.status === "failed") {
-        return {
-          errors: {},
-          serverErrorMessage: response.error.data.message,
-          serverSuccessMessage: "",
-          loading: false,
-        };
-      }
-    } catch (error) {
-      console.log("Error verifying email:", error);
-      return {
-        errors: {},
-        serverErrorMessage: "An unexpected error occurred",
-        serverSuccessMessage: "",
-        loading: false,
-      };
-    }
-
-    return prevState;
-  };
-
-  const [state, formAction, isPending] = useActionState(verifyEmailAction, initialState);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

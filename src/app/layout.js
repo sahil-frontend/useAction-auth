@@ -1,7 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "./StoreProvider";
-
+import { ToastContainer, toast } from 'react-toastify';
+import Navbar from "@/components/Navbar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -21,7 +22,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-gray-100">
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <Navbar/>
+          {children}
+        <ToastContainer position="top-right" autoClose={3000} />
+        </StoreProvider>
       </body>
     </html>
   );

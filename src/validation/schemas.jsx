@@ -1,52 +1,52 @@
-import * as Yup from "yup";
+import { z } from "zod";
 
-export const registerSchema = Yup.object().shape({
-  name: Yup.string()
-    .required("Name is required")
-    .min(2, "Name must be at least 2 characters"),
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
-  mobile: Yup.string()
-    .required("Mobile number is required")
-    .matches(/^\d{10,15}$/, "Mobile number must be 10-15 digits"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .required("Password is required"),
+// 📝 Registration Form Validation
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  mobile: z
+    .string()
+    .regex(/^\d{10,15}$/, "Mobile number must be 10-15 digits"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-
-export const loginSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required"),
-});
-export const resetPasswordSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-
+// 🔐 Login Form Validation
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(1, "Password is required"),
 });
 
-export const resetPasswordConfirmSchema = Yup.object({
-  password: Yup.string()
-   
-    .required("Password is required"),
-  password_confermation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Confirm Password is required"),
+// 📧 Reset Password (Step 1 - Send Email)
+export const resetPasswordSchema = z.object({
+  email: z.string().email("Invalid email"),
 });
 
-export const verifyEmailSchema = Yup.object({
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is required"),
-  otp: Yup.string()
-   
-    .required("OTP is required"),
+// 🔒 Reset Password Confirmation (Step 2)
+export const resetPasswordConfirmSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  otp: z.string().min(4, "OTP must be at least 4 characters"),
+  newPassword: z
+    .string()
+    .min(6, "Password must be at least 6 characters long"),
+  confirmPassword: z.string(),
+})
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
+// ✅ Verify Email / OTP Schema (minimal)
+export const verifyEmailSchema = z.object({
+  otp: z.string().min(4, "OTP must be at least 4 digits"),
 });
-export const changePasswordSchema = Yup.object({
-  password: Yup.string()
-    
-    .required("Password is required"),
-  password_confirmation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-   
-});
+
+// 🔄 Change Password Schema
+export const changePasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords must match",
+    path: ["password_confirmation"],
+  });

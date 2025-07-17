@@ -1,81 +1,67 @@
 "use client";
 
-import { useActionState } from "react";
-import { resetPasswordSchema } from "@/validation/schemas";
-import { useResetPasswordLinkMutation } from "@/lib/services/auth";
+import { resetPasswordLinkAction } from "@/action/resetPasswordLinkAction";
+import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useActionState, useEffect } from "react";
 
 const ResetPasswordLink = () => {
-  const [resetPasswordLink] = useResetPasswordLinkMutation();
+  const [state, formAction, isPending] = useActionState(
+    resetPasswordLinkAction,
+    undefined
+  );
+  const router = useRouter();
 
-  // Reset password link action function
-  const resetPasswordLinkAction = async (prevState, formData) => {
+  useEffect(() => {
+    if (state?.success && state?.redirect) {
+      toast.success(state.message || "OTP sent successfully!");
+      
+      // Store email for the next step
+      const formData = new FormData();
+      const email = state.email; // You'll need to return this from your action
+      
+      if (email) {
+        sessionStorage.setItem("resetEmail", email);
+      }
+      
+      setTimeout(() => {
+        router.push(state.redirect);
+      }, 1200);
+    } else if (state?.error) {
+      toast.error(state.error);
+      console.log(state.error);
+    }
+    
+    // Show field errors as toast if present
+    if (state?.errors) {
+      Object.values(state.errors).forEach((err) => {
+        if (err) toast.error(Array.isArray(err) ? err.join(", ") : err);
+      });
+    }
+  }, [
+    state?.success,
+    state?.redirect,
+    state?.error,
+    state?.errors,
+    state?.message,
+    router,
+  ]);
+
+  const handleSubmit = async (formData) => {
     const email = formData.get("email");
-    const values = { email };
-
-    // Validate using resetPasswordSchema
-    try {
-      await resetPasswordSchema.validate(values, { abortEarly: false });
-    } catch (validationError) {
-      const errors = {};
-      if (validationError.inner) {
-        validationError.inner.forEach((error) => {
-          errors[error.path] = error.message;
-        });
-      }
-      return {
-        errors,
-        serverErrorMessage: "",
-        serverSuccessMessage: "",
-        success: false,
-      };
+    if (email) {
+      sessionStorage.setItem("resetEmail", email);
     }
-
-    try {
-      const response = await resetPasswordLink(values);
-      
-      if (response.data && response.data.status === "success") {
-        return {
-          errors: {},
-          serverErrorMessage: "",
-          serverSuccessMessage: response.data.message,
-          success: true,
-        };
-      }
-      
-      if (response.error && response.error.status === "failed") {
-        return {
-          errors: {},
-          serverErrorMessage: response.error.data.message,
-          serverSuccessMessage: "",
-          success: false,
-        };
-      }
-    } catch (error) {
-      console.log("Error sending reset password link:", error);
-      return {
-        errors: {},
-        serverErrorMessage: "An unexpected error occurred. Please try again.",
-        serverSuccessMessage: "",
-        success: false,
-      };
-    }
-
-    return prevState;
+    return formAction(formData);
   };
-  
-  const [state, formAction, isPending] = useActionState(resetPasswordLinkAction, {
-    errors: {},
-    serverErrorMessage: "",
-    serverSuccessMessage: "",
-    success: false,
-  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
-        
-        <form className="space-y-4" action={formAction}>
+
+        <form className="space-y-4" action={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -86,9 +72,14 @@ const ResetPasswordLink = () => {
               id="email"
               placeholder="you@example.com"
               className="w-full mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
-            {state.errors.email && (
-              <p className="text-red-500 text-sm mt-1">{state.errors.email}</p>
+            {state?.errors?.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {Array.isArray(state.errors.email) 
+                  ? state.errors.email.join(", ") 
+                  : state.errors.email}
+              </p>
             )}
           </div>
 
@@ -101,12 +92,17 @@ const ResetPasswordLink = () => {
           </button>
         </form>
 
-        {state.serverSuccessMessage && (
-          <div className="text-green-500 text-sm mt-2">{state.serverSuccessMessage}</div>
-        )}
-        {state.serverErrorMessage && (
-          <div className="text-red-500 text-sm mt-2">{state.serverErrorMessage}</div>
-        )}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
     </div>
   );
