@@ -23,9 +23,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-gray-100">
         <StoreProvider>
-          <Navbar/>
+          <Navbar />
           {children}
-        <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={3000} />
         </StoreProvider>
       </body>
     </html>

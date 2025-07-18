@@ -9,6 +9,7 @@ const UserSidebar = () => {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem("user");
       const response = await logoutUser();
       console.log(response, "logout response");
       if (response.data && response.data.status === "success") {
@@ -25,7 +26,7 @@ const UserSidebar = () => {
   // Only show Change Password if user does NOT have googleId
   const showChangePassword = !data?.user?.googleId;
   console.log(data, "side bar data");
-  return (   
+  return (
     <div className="w-64 min-h-screen bg-white border-r shadow-md p-6">
       <h2 className="text-xl font-semibold mb-6 text-gray-800">User Menu</h2>
       <ul className="space-y-4 text-sm text-gray-700">

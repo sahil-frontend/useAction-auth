@@ -44,6 +44,11 @@ const Login = () => {
     try {
       const result = await loginUser(formData).unwrap();
       console.log("✅ Login Success:", result);
+      // Store user data in localStorage
+      if (result?.data?.user) {
+        localStorage.setItem("user", JSON.stringify(result.data.user));
+        window.dispatchEvent(new Event("auth-changed")); // Notify Navbar
+      }
       toast.success("Login successful!");
       setTimeout(() => {
         router.push("/user/profile");
@@ -58,7 +63,13 @@ const Login = () => {
     const idToken = response.credential;
     try {
       const result = await googleLogin(idToken).unwrap();
-      if (result.success) {
+      console.log("Google login result:", result); // Debug log
+      if (result.success === true) {
+        // Store user data in localStorage for Google login
+        if (result?.data?.user) {
+          localStorage.setItem("user", JSON.stringify(result.data.user));
+          window.dispatchEvent(new Event("auth-changed")); // Notify Navbar
+        }
         toast.success("Google login successful!");
         setTimeout(() => {
           router.push("/user/profile");
